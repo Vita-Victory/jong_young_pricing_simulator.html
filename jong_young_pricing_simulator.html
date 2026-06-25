@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jong Young Flower Market — Dynamic Pricing Simulator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 2rem 1rem;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 1.5rem 0 1rem;
+      border-top: 1px solid #eee;
+      padding-top: 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .slider-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    .label-value {
+      font-weight: 600;
+      color: #333;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: #ddd;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1D9E75;
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1D9E75;
+      cursor: pointer;
+      border: none;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 2rem 0;
+    }
+    .metric-card {
+      background: #f0f0f0;
+      padding: 1rem;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .metric-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 6px;
+    }
+    .metric-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .scenarios {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 1.5rem;
+    }
+    .scenario-card {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1.25rem;
+      background: white;
+    }
+    .scenario-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    .scenario-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: #666;
+    }
+    .scenario-value {
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Dynamic Pricing & Revenue Optimizer</h1>
+
+    <div class="grid">
+      <!-- Revenue Section -->
+      <div class="panel">
+        <h2>Revenue Drivers</h2>
+
+        <div class="slider-group">
+          <label>
+            <span>Bouquet price</span>
+            <span class="label-value">$<span id="price-bouquets">45</span></span>
+          </label>
+          <input type="range" min="20" max="100" value="45" id="slider-price-bouquets">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Monthly bouquet orders</span>
+            <span class="label-value"><span id="vol-bouquets">80</span> units</span>
+          </label>
+          <input type="range" min="20" max="300" value="80" id="slider-vol-bouquets">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Popular bunches price</span>
+            <span class="label-value">$<span id="price-bunches-pop">35</span></span>
+          </label>
+          <input type="range" min="15" max="75" value="35" id="slider-price-bunches-pop">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Unpopular bunches price</span>
+            <span class="label-value">$<span id="price-bunches-unpop">20</span></span>
+          </label>
+          <input type="range" min="10" max="50" value="20" id="slider-price-bunches-unpop">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Monthly bunch orders</span>
+            <span class="label-value"><span id="vol-bunches">120</span> units</span>
+          </label>
+          <input type="range" min="30" max="400" value="120" id="slider-vol-bunches">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Potted flowers price</span>
+            <span class="label-value">$<span id="price-potted">55</span></span>
+          </label>
+          <input type="range" min="25" max="120" value="55" id="slider-price-potted">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Monthly potted orders</span>
+            <span class="label-value"><span id="vol-potted">50</span> units</span>
+          </label>
+          <input type="range" min="10" max="200" value="50" id="slider-vol-potted">
+        </div>
+      </div>
+
+      <!-- Costs Section -->
+      <div class="panel">
+        <h2>Cost Structure</h2>
+
+        <div class="slider-group">
+          <label>
+            <span>Flower COGS per unit</span>
+            <span class="label-value">$<span id="cost-flowers">12</span></span>
+          </label>
+          <input type="range" min="5" max="30" value="12" id="slider-cost-flowers">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Labour per month</span>
+            <span class="label-value">$<span id="cost-labour">2500</span></span>
+          </label>
+          <input type="range" min="1000" max="6000" step="100" value="2500" id="slider-cost-labour">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Delivery cost per order</span>
+            <span class="label-value">$<span id="cost-delivery">3</span></span>
+          </label>
+          <input type="range" min="1" max="10" step="0.5" value="3" id="slider-cost-delivery">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Complimentary items %</span>
+            <span class="label-value"><span id="cost-complimentary">3</span>%</span>
+          </label>
+          <input type="range" min="0" max="10" step="0.5" value="3" id="slider-cost-complimentary">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Waste/spoilage %</span>
+            <span class="label-value"><span id="cost-waste">8</span>%</span>
+          </label>
+          <input type="range" min="2" max="20" step="1" value="8" id="slider-cost-waste">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Monthly rent</span>
+            <span class="label-value">$<span id="cost-rent">1500</span></span>
+          </label>
+          <input type="range" min="500" max="4000" step="100" value="1500" id="slider-cost-rent">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Base salary</span>
+            <span class="label-value">$<span id="cost-salary">3000</span></span>
+          </label>
+          <input type="range" min="1000" max="8000" step="100" value="3000" id="slider-cost-salary">
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Marketing & Growth -->
+      <div class="panel">
+        <h2>Marketing & Growth</h2>
+
+        <div class="slider-group">
+          <label>
+            <span>TikTok ads per month</span>
+            <span class="label-value">$<span id="cost-tiktok">200</span></span>
+          </label>
+          <input type="range" min="0" max="1000" step="50" value="200" id="slider-cost-tiktok">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Instagram ads per month</span>
+            <span class="label-value">$<span id="cost-instagram">300</span></span>
+          </label>
+          <input type="range" min="0" max="1000" step="50" value="300" id="slider-cost-instagram">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Website ads per month</span>
+            <span class="label-value">$<span id="cost-website">150</span></span>
+          </label>
+          <input type="range" min="0" max="1000" step="50" value="150" id="slider-cost-website">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Product creation per month</span>
+            <span class="label-value">$<span id="cost-product">300</span></span>
+          </label>
+          <input type="range" min="0" max="1500" step="50" value="300" id="slider-cost-product">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Automation/renovation per month</span>
+            <span class="label-value">$<span id="cost-automation">250</span></span>
+          </label>
+          <input type="range" min="0" max="2000" step="50" value="250" id="slider-cost-automation">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Payment processing fee %</span>
+            <span class="label-value"><span id="cost-processing">2.5</span>%</span>
+          </label>
+          <input type="range" min="0" max="5" step="0.1" value="2.5" id="slider-cost-processing">
+        </div>
+      </div>
+
+      <!-- Seasonality -->
+      <div class="panel">
+        <h2>Scenarios</h2>
+
+        <div class="slider-group">
+          <label>
+            <span>Normal month multiplier</span>
+            <span class="label-value"><span id="mult-normal">1.0</span>x</span>
+          </label>
+          <input type="range" min="0.5" max="2" step="0.1" value="1.0" id="slider-mult-normal">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Peak season multiplier</span>
+            <span class="label-value"><span id="mult-peak">2.5</span>x</span>
+          </label>
+          <input type="range" min="1" max="4" step="0.1" value="2.5" id="slider-mult-peak">
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Peak months per year</span>
+            <span class="label-value"><span id="peak-count">3</span> months</span>
+          </label>
+          <input type="range" min="1" max="6" step="1" value="3" id="slider-peak-count">
+        </div>
+      </div>
+    </div>
+
+    <h2>Monthly Projections</h2>
+    <div class="metrics">
+      <div class="metric-card">
+        <div class="metric-label">Gross Revenue</div>
+        <div class="metric-value">$<span id="result-revenue">0</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Costs</div>
+        <div class="metric-value">$<span id="result-costs">0</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Net Profit</div>
+        <div class="metric-value">$<span id="result-profit">0</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Profit Margin %</div>
+        <div class="metric-value"><span id="result-margin">0</span>%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Annual Revenue</div>
+        <div class="metric-value">$<span id="result-annual">0</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Peak Month Profit</div>
+        <div class="metric-value">$<span id="result-peak-profit">0</span></div>
+      </div>
+    </div>
+
+    <h2>Annual Scenario Analysis</h2>
+    <div class="scenarios">
+      <div class="scenario-card">
+        <div class="scenario-title">📊 Conservative</div>
+        <div class="scenario-item">
+          <span>Volume</span>
+          <span class="scenario-value">80%</span>
+        </div>
+        <div class="scenario-item">
+          <span>Annual Revenue</span>
+          <span class="scenario-value">$<span id="scenario-conservative-rev">0</span></span>
+        </div>
+        <div class="scenario-item">
+          <span>Annual Profit</span>
+          <span class="scenario-value">$<span id="scenario-conservative-profit">0</span></span>
+        </div>
+      </div>
+      
+      <div class="scenario-card">
+        <div class="scenario-title">📈 Moderate</div>
+        <div class="scenario-item">
+          <span>Volume</span>
+          <span class="scenario-value">100%</span>
+        </div>
+        <div class="scenario-item">
+          <span>Annual Revenue</span>
+          <span class="scenario-value">$<span id="scenario-moderate-rev">0</span></span>
+        </div>
+        <div class="scenario-item">
+          <span>Annual Profit</span>
+          <span class="scenario-value">$<span id="scenario-moderate-profit">0</span></span>
+        </div>
+      </div>
+      
+      <div class="scenario-card">
+        <div class="scenario-title">🚀 Aggressive</div>
+        <div class="scenario-item">
+          <span>Volume</span>
+          <span class="scenario-value">120%</span>
+        </div>
+        <div class="scenario-item">
+          <span>Annual Revenue</span>
+          <span class="scenario-value">$<span id="scenario-aggressive-rev">0</span></span>
+        </div>
+        <div class="scenario-item">
+          <span>Annual Profit</span>
+          <span class="scenario-value">$<span id="scenario-aggressive-profit">0</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function round(num, decimals = 0) {
+      return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
+    }
+
+    function getValues() {
+      return {
+        priceBouquets: parseFloat(document.getElementById('slider-price-bouquets').value),
+        volBouquets: parseFloat(document.getElementById('slider-vol-bouquets').value),
+        priceBunchesPopular: parseFloat(document.getElementById('slider-price-bunches-pop').value),
+        priceBunchesUnpopular: parseFloat(document.getElementById('slider-price-bunches-unpop').value),
+        volBunches: parseFloat(document.getElementById('slider-vol-bunches').value),
+        pricePotted: parseFloat(document.getElementById('slider-price-potted').value),
+        volPotted: parseFloat(document.getElementById('slider-vol-potted').value),
+        costFlowers: parseFloat(document.getElementById('slider-cost-flowers').value),
+        costLabour: parseFloat(document.getElementById('slider-cost-labour').value),
+        costDelivery: parseFloat(document.getElementById('slider-cost-delivery').value),
+        costComplimentary: parseFloat(document.getElementById('slider-cost-complimentary').value),
+        costWaste: parseFloat(document.getElementById('slider-cost-waste').value),
+        costRent: parseFloat(document.getElementById('slider-cost-rent').value),
+        costSalary: parseFloat(document.getElementById('slider-cost-salary').value),
+        costTiktok: parseFloat(document.getElementById('slider-cost-tiktok').value),
+        costInstagram: parseFloat(document.getElementById('slider-cost-instagram').value),
+        costWebsite: parseFloat(document.getElementById('slider-cost-website').value),
+        costProduct: parseFloat(document.getElementById('slider-cost-product').value),
+        costAutomation: parseFloat(document.getElementById('slider-cost-automation').value),
+        costProcessing: parseFloat(document.getElementById('slider-cost-processing').value),
+        multNormal: parseFloat(document.getElementById('slider-mult-normal').value),
+        multPeak: parseFloat(document.getElementById('slider-mult-peak').value),
+        peakCount: parseFloat(document.getElementById('slider-peak-count').value),
+      };
+    }
+
+    function calculateMetrics(volumeMultiplier = 1.0) {
+      const v = getValues();
+      const revenueBouquets = v.priceBouquets * v.volBouquets * volumeMultiplier;
+      const revenueBunches = (v.priceBunchesPopular * v.volBunches * 0.6 + v.priceBunchesUnpopular * v.volBunches * 0.4) * volumeMultiplier;
+      const revenuePotted = v.pricePotted * v.volPotted * volumeMultiplier;
+      const totalOrdersMonth = (v.volBouquets + v.volBunches + v.volPotted) * volumeMultiplier;
+      const grossRevenue = revenueBouquets + revenueBunches + revenuePotted;
+      
+      const cogsFlowers = (v.costFlowers * totalOrdersMonth) * (1 + v.costWaste / 100);
+      const cogsComplimentary = grossRevenue * (v.costComplimentary / 100);
+      const cogsDelivery = v.costDelivery * totalOrdersMonth;
+      const totalCOGS = cogsFlowers + cogsComplimentary + cogsDelivery;
+      
+      const processingFees = grossRevenue * (v.costProcessing / 100);
+      const fixedCosts = v.costLabour + v.costRent + v.costSalary;
+      const variableCosts = v.costTiktok + v.costInstagram + v.costWebsite + v.costProduct + v.costAutomation;
+      const totalCosts = totalCOGS + processingFees + fixedCosts + variableCosts;
+      
+      const netProfit = grossRevenue - totalCosts;
+      const profitMargin = grossRevenue > 0 ? (netProfit / grossRevenue * 100) : 0;
+      
+      return {
+        grossRevenue,
+        totalCosts,
+        netProfit,
+        profitMargin,
+      };
+    }
+
+    function updateDisplay() {
+      const normal = calculateMetrics(1.0);
+      const peak = calculateMetrics(getValues().multPeak);
+      
+      document.getElementById('price-bouquets').textContent = round(getValues().priceBouquets);
+      document.getElementById('vol-bouquets').textContent = round(getValues().volBouquets);
+      document.getElementById('price-bunches-pop').textContent = round(getValues().priceBunchesPopular);
+      document.getElementById('price-bunches-unpop').textContent = round(getValues().priceBunchesUnpopular);
+      document.getElementById('vol-bunches').textContent = round(getValues().volBunches);
+      document.getElementById('price-potted').textContent = round(getValues().pricePotted);
+      document.getElementById('vol-potted').textContent = round(getValues().volPotted);
+      document.getElementById('cost-flowers').textContent = round(getValues().costFlowers);
+      document.getElementById('cost-labour').textContent = round(getValues().costLabour);
+      document.getElementById('cost-delivery').textContent = round(getValues().costDelivery, 1);
+      document.getElementById('cost-complimentary').textContent = round(getValues().costComplimentary, 1);
+      document.getElementById('cost-waste').textContent = round(getValues().costWaste);
+      document.getElementById('cost-rent').textContent = round(getValues().costRent);
+      document.getElementById('cost-salary').textContent = round(getValues().costSalary);
+      document.getElementById('cost-tiktok').textContent = round(getValues().costTiktok);
+      document.getElementById('cost-instagram').textContent = round(getValues().costInstagram);
+      document.getElementById('cost-website').textContent = round(getValues().costWebsite);
+      document.getElementById('cost-product').textContent = round(getValues().costProduct);
+      document.getElementById('cost-automation').textContent = round(getValues().costAutomation);
+      document.getElementById('cost-processing').textContent = round(getValues().costProcessing, 1);
+      document.getElementById('mult-normal').textContent = round(getValues().multNormal, 1);
+      document.getElementById('mult-peak').textContent = round(getValues().multPeak, 1);
+      document.getElementById('peak-count').textContent = round(getValues().peakCount);
+      
+      document.getElementById('result-revenue').textContent = round(normal.grossRevenue).toLocaleString();
+      document.getElementById('result-costs').textContent = round(normal.totalCosts).toLocaleString();
+      document.getElementById('result-profit').textContent = round(normal.netProfit).toLocaleString();
+      document.getElementById('result-margin').textContent = round(normal.profitMargin, 1);
+      document.getElementById('result-annual').textContent = round(normal.grossRevenue * 9 + peak.grossRevenue * getValues().peakCount).toLocaleString();
+      document.getElementById('result-peak-profit').textContent = round(peak.netProfit).toLocaleString();
+      
+      const conservative = calculateMetrics(0.8);
+      const moderate = calculateMetrics(1.0);
+      const aggressive = calculateMetrics(1.2);
+      
+      const peakMonths = getValues().peakCount;
+      const normalMonths = 12 - peakMonths;
+      
+      const annualConservative = conservative.netProfit * normalMonths + peak.netProfit * peakMonths;
+      const annualModerate = moderate.netProfit * normalMonths + peak.netProfit * peakMonths;
+      const annualAggressive = aggressive.netProfit * normalMonths + peak.netProfit * peakMonths;
+      
+      const annualRevConservative = conservative.grossRevenue * normalMonths + peak.grossRevenue * peakMonths;
+      const annualRevModerate = moderate.grossRevenue * normalMonths + peak.grossRevenue * peakMonths;
+      const annualRevAggressive = aggressive.grossRevenue * normalMonths + peak.grossRevenue * peakMonths;
+      
+      document.getElementById('scenario-conservative-rev').textContent = round(annualRevConservative).toLocaleString();
+      document.getElementById('scenario-conservative-profit').textContent = round(annualConservative).toLocaleString();
+      document.getElementById('scenario-moderate-rev').textContent = round(annualRevModerate).toLocaleString();
+      document.getElementById('scenario-moderate-profit').textContent = round(annualModerate).toLocaleString();
+      document.getElementById('scenario-aggressive-rev').textContent = round(annualRevAggressive).toLocaleString();
+      document.getElementById('scenario-aggressive-profit').textContent = round(annualAggressive).toLocaleString();
+    }
+
+    const sliders = document.querySelectorAll('input[type="range"]');
+    sliders.forEach(slider => {
+      slider.addEventListener('input', updateDisplay);
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
